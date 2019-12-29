@@ -3,6 +3,7 @@ import pypyodbc
 import requests
 import json
 import time
+import os
 
 '''
 Python使用ODBC连接SqlServer，版本对应的DRIVER名称如下：
@@ -37,7 +38,7 @@ begin
 end;
 """
 
-import_api = 'http://127.0.0.1:8858/ImportService/SaveOrder'
+import_api = 'http://{ip}:8858/ImportService/SaveOrder'
 
 
 def query_save():
@@ -59,16 +60,16 @@ def query_save():
                 data['Amount'] = float(row[5])
                 data['FuelTime'] = row[8].strftime("%Y-%m-%d %H:%M:%S")
                 data = json.dumps(data)
-                print("")
+                print('..............................................')
                 print("--->", data)
                 rsp = requests.post(url=import_api, data=data, headers={'Content-Type': 'application/json'})
                 print("<---", rsp.status_code, rsp.text)
                 if rsp.status_code == 200:
                     result = json.loads(rsp.text)
                     if result['IsSaved']:
-                        newOrderId = result['SavedOrderId']
+                        new_order_id = result['SavedOrderId']
                         cur.execute("update _ExtPayOrder set [status]=1,neworderid=%s where orderid='%s'" % (
-                            newOrderId, orderId))
+                            new_order_id, orderId))
                         conn.commit()
                 time.sleep(0.2)
         cur.close()
@@ -78,9 +79,14 @@ def query_save():
 
 
 if __name__ == '__main__':
+    config_file = os.getcwd() + "\\data.agent.json"
+    print(config_file)
+    config_json = open(config_file, encoding='utf-8')
+    agent_config = json.load(config_json)
+    import_api = import_api.replace("{ip}", agent_config['import'])
     conn_str = r'DRIVER={SQL Server};SERVER=%s;DATABASE=%s;UID=%s;PWD=%s;charset="utf8"' % (
-        'LAPTOP-KLR0ITIC\SQLEXPRESS', 'cngms', 'sa', 'admin@local')
-    print('...work...')
+        agent_config['server'], agent_config['database'], agent_config['uid'], agent_config['pwd'])
+    print('...work...', agent_config['import'])
     while True:
         query_save()
         time.sleep(1)

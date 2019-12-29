@@ -1,0 +1,7 @@
+{
+  "import": "127.0.0.1",
+  "server": "LAPTOP-KLR0ITIC\\SQLEXPRESS",
+  "database": "cngms",
+  "uid": "sa",
+  "pwd": "admin@local"
+}
