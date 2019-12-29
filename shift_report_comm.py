@@ -10,12 +10,17 @@ class Total:
     receAmt = 0
     realAmt = 0
     discAmt = 0
+
+    chargeAmt = 0
+    giftAmt = 0
+    totalAmt = 0
+    
     rowCnt = 0
     rowCnt = 0
 
 
 # 油品-油枪销售汇总
-def shift_prod_noz_order(cur, ctx, shift_no, shift_date):
+def _shift_prod_noz_order(cur, ctx, shift_no, shift_date):
     print('rpt_shift_prod_noz_order:',
           cur.execute(
               "DELETE FROM rpt_shift_prod_noz_order WHERE STATION_ID='%s' AND SHIFT_NO='%s'" % (ctx[1], shift_no)))
@@ -28,7 +33,7 @@ def shift_prod_noz_order(cur, ctx, shift_no, shift_date):
 
 
 # 员工-油品-支付方式汇总 非余额支付
-def shift_emp_prod_pay(cur, ctx, shift_no, shift_date):
+def _shift_emp_prod_pay(cur, ctx, shift_no, shift_date):
     print('shift_emp_prod_pay:',
           cur.execute(
               "DELETE FROM rpt_shift_emp_prod_pay WHERE STATION_ID='%s' AND SHIFT_NO='%s'" % (ctx[1], shift_no)))
@@ -40,7 +45,7 @@ def shift_emp_prod_pay(cur, ctx, shift_no, shift_date):
     cur.execute(sql)
 
 
-def create_excel(cur, ctx, shift_no, filename):
+def _create_excel(cur, ctx, shift_no):
     shift_sql = "select SHIFT_NO,SHIFT_DATE,START_TIME,END_TIME,EMP_NAME FROM shift_record " \
                 "where GROUP_ID='%s' AND STATION_ID='%s' AND SHIFT_NO='%s'" % (ctx[0], ctx[1], shift_no)
     cur.execute(shift_sql)
@@ -327,29 +332,21 @@ def create_excel(cur, ctx, shift_no, filename):
 
     wb.security.workbookPassword = '123456'
     wb.security.lockStructure = True
-    # wb.save("D:\\shift_report_%s.xlsx" % (shift_no))
-    wb.save(filename)
+    return wb
 
 
 def build_shift_report(conn, argv):
     print(argv)
-    try:
-        station_id = argv[1]
-        shift_no = argv[2]
-        shift_date = argv[3]
-        file_name = argv[4]
-        cur = conn.cursor()
-        fetch_station = "SELECT GROUP_ID,STATION_ID,STATION_NAME FROM eng_erp.station_info where STATION_ID=%s"
-        cur.execute(fetch_station % (station_id))
-        ctx = cur.fetchone()
-        print(ctx)
-        if ctx:
-            shift_emp_prod_pay(cur, ctx, shift_no, shift_date)
-            shift_prod_noz_order(cur, ctx, shift_no, shift_date)
-            conn.commit()
-            prepare_path(file_name)
-            create_excel(cur, ctx, shift_no, file_name)
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-    finally:
-        conn.close()
+    station_id = argv[1]
+    shift_no = argv[2]
+    shift_date = argv[3]
+    cur = conn.cursor()
+    fetch_station = "SELECT GROUP_ID,STATION_ID,STATION_NAME FROM eng_erp.station_info where STATION_ID=%s"
+    cur.execute(fetch_station % (station_id))
+    ctx = cur.fetchone()
+    print(ctx)
+    if ctx:
+        _shift_emp_prod_pay(cur, ctx, shift_no, shift_date)
+        _shift_prod_noz_order(cur, ctx, shift_no, shift_date)
+        conn.commit()
+        return _create_excel(cur, ctx, shift_no)
