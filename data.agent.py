@@ -83,10 +83,13 @@ if __name__ == '__main__':
     print(config_file)
     config_json = open(config_file, encoding='utf-8')
     agent_config = json.load(config_json)
-    import_api = import_api.replace("{ip}", agent_config['import'])
+
     conn_str = r'DRIVER={SQL Server};SERVER=%s;DATABASE=%s;UID=%s;PWD=%s;charset="utf8"' % (
         agent_config['server'], agent_config['database'], agent_config['uid'], agent_config['pwd'])
-    print('...work...', agent_config['import'])
+    interval = agent_config['interval']
+    target = agent_config['target']
+    import_api = import_api.replace("{ip}", target)
+    print('...work...interval=%ss --->%s' % (interval, target))
     while True:
         query_save()
-        time.sleep(1)
+        time.sleep(interval)

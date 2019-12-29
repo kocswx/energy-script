@@ -1,5 +1,6 @@
 {
-  "import": "127.0.0.1",
+  "target": "127.0.0.1",
+  "interval": 3,
   "server": "LAPTOP-KLR0ITIC\\SQLEXPRESS",
   "database": "cngms",
   "uid": "sa",
