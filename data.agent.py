@@ -77,7 +77,7 @@ def query_save():
     except Exception as ex:
         print('exception', ex)
 
-
+# v_s:844BF992
 if __name__ == '__main__':
     config_file = os.getcwd() + "\\data.agent.json"
     print(config_file)

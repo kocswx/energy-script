@@ -14,7 +14,7 @@ class Total:
     chargeAmt = 0
     giftAmt = 0
     totalAmt = 0
-    
+
     rowCnt = 0
     rowCnt = 0
 
@@ -341,8 +341,9 @@ def build_shift_report(conn, argv):
     shift_no = argv[2]
     shift_date = argv[3]
     cur = conn.cursor()
-    fetch_station = "SELECT GROUP_ID,STATION_ID,STATION_NAME FROM eng_erp.station_info where STATION_ID=%s"
-    cur.execute(fetch_station % (station_id))
+    fetch_station = "SELECT GROUP_ID,STATION_ID,STATION_NAME FROM station_info where STATION_ID=%s" % (station_id)
+    # print(fetch_station)
+    cur.execute(fetch_station)
     ctx = cur.fetchone()
     print(ctx)
     if ctx:

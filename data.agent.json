@@ -1,8 +1,8 @@
 {
   "target": "127.0.0.1",
   "interval": 3,
-  "server": "LAPTOP-KLR0ITIC\\SQLEXPRESS",
+  "server": ".",
   "database": "cngms",
   "uid": "sa",
-  "pwd": "admin@local"
+  "pwd": "v_s:844BF992"
 }
