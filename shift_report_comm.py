@@ -1,7 +1,6 @@
 import datetime
 from openpyxl import Workbook
-from config_openpyxl import *
-from util import *
+from _openpyxl_constant import *
 
 
 class Total:
@@ -20,32 +19,32 @@ class Total:
 
 
 # 油品-油枪销售汇总
-def _shift_prod_noz_order(cur, ctx, shift_no, shift_date):
+def _shift_prod_noz_order(cur, ctx, shift_no, shift_date, rpt_db_name):
     print('rpt_shift_prod_noz_order:',
-          cur.execute(
-              "DELETE FROM rpt_shift_prod_noz_order WHERE STATION_ID='%s' AND SHIFT_NO='%s'" % (ctx[1], shift_no)))
-    sql = "INSERT INTO `rpt_shift_prod_noz_order`(`GROUP_ID`, `STATION_ID`, `SHIFT_NO`, `SHIFT_DATE`, `NOZ_NO`, `PROD_ID`,`PROD_NAME`, `CNT`, `VOL`, `RECE_AMT`, `REAL_AMT`, `DISC_AMT`)" \
+          cur.execute("DELETE FROM %s.rpt_shift_prod_noz_order WHERE STATION_ID='%s' AND SHIFT_NO='%s'" % (
+              rpt_db_name, ctx[1], shift_no)))
+    sql = "INSERT INTO %s.`rpt_shift_prod_noz_order`(`GROUP_ID`, `STATION_ID`, `SHIFT_NO`, `SHIFT_DATE`, `NOZ_NO`, `PROD_ID`,`PROD_NAME`, `CNT`, `VOL`, `RECE_AMT`, `REAL_AMT`, `DISC_AMT`)" \
           "SELECT GROUP_ID,STATION_ID,SHIFT_NO,'%s' AS SHIFT_DATE,NOZ_NO,PROD_ID,PROD_NAME,COUNT(1) AS CNT,ifnull(SUM(VOL), 0) AS VOL,ifnull(SUM(RECE_AMT), 0) AS RECE_AMT," \
           "ifnull(SUM(REAL_AMT), 0) AS REAL_AMT,ifnull(SUM(DISC_AMT), 0) AS DISC_AMT FROM fuel_order WHERE STATION_ID='%s' AND SHIFT_NO ='%s' GROUP BY GROUP_ID,STATION_ID,SHIFT_NO,NOZ_NO,PROD_ID,PROD_NAME" % (
-              shift_date, ctx[1], shift_no)
+              rpt_db_name, shift_date, ctx[1], shift_no)
     print(sql)
     cur.execute(sql)
 
 
 # 员工-油品-支付方式汇总 非余额支付
-def _shift_emp_prod_pay(cur, ctx, shift_no, shift_date):
+def _shift_emp_prod_pay(cur, ctx, shift_no, shift_date, rpt_db_name):
     print('shift_emp_prod_pay:',
-          cur.execute(
-              "DELETE FROM rpt_shift_emp_prod_pay WHERE STATION_ID='%s' AND SHIFT_NO='%s'" % (ctx[1], shift_no)))
-    sql = "INSERT INTO `rpt_shift_emp_prod_pay` (`GROUP_ID`, `STATION_ID`, `SHIFT_NO`, `SHIFT_DATE`, `PROD_ID`, `PROD_NAME`, `EMP_ID`, `EMP_NAME`, `PAY_TYPE_ID`, `PAY_TYPE_NAME`, `CNT`, `VOL`, `RECE_AMT`, `REAL_AMT`, `DISC_AMT`) " \
+          cur.execute("DELETE FROM %s.rpt_shift_emp_prod_pay WHERE STATION_ID='%s' AND SHIFT_NO='%s'" % (
+              rpt_db_name, ctx[1], shift_no)))
+    sql = "INSERT INTO %s.`rpt_shift_emp_prod_pay` (`GROUP_ID`, `STATION_ID`, `SHIFT_NO`, `SHIFT_DATE`, `PROD_ID`, `PROD_NAME`, `EMP_ID`, `EMP_NAME`, `PAY_TYPE_ID`, `PAY_TYPE_NAME`, `CNT`, `VOL`, `RECE_AMT`, `REAL_AMT`, `DISC_AMT`) " \
           "SELECT GROUP_ID,STATION_ID,SHIFT_NO,'%s' as SHIFT_DATE,PROD_ID,PROD_NAME,EMP_ID,EMP_NAME,PAY_TYPE_ID,PAY_TYPE_NAME,COUNT(1) AS CNT,SUM(VOL) AS VOL,SUM(RECE_AMT) AS RECE_AMT, SUM(REAL_AMT) AS REAL_AMT,SUM(DISC_AMT) AS DISC_AMT " \
           "FROM fuel_order WHERE  STATION_ID='%s' AND PAY_TYPE_ID<>2 and SHIFT_NO='%s' GROUP BY EMP_ID,EMP_NAME,PROD_ID,PROD_NAME,PAY_TYPE_ID,PAY_TYPE_NAME, GROUP_ID,STATION_ID,SHIFT_NO" % (
-              shift_date, ctx[1], shift_no)
+              rpt_db_name, shift_date, ctx[1], shift_no)
     print(sql)
     cur.execute(sql)
 
 
-def _create_excel(cur, ctx, shift_no):
+def _create_excel(cur, ctx, shift_no, rpt_db_name):
     shift_sql = "select SHIFT_NO,SHIFT_DATE,START_TIME,END_TIME,EMP_NAME FROM shift_record " \
                 "where GROUP_ID='%s' AND STATION_ID='%s' AND SHIFT_NO='%s'" % (ctx[0], ctx[1], shift_no)
     cur.execute(shift_sql)
@@ -98,8 +97,8 @@ def _create_excel(cur, ctx, shift_no):
     total = Total()  # 总计
     prod_total = Total()  # 行汇总
 
-    rpt_sql = "SELECT PROD_NAME,NOZ_NO,CNT,VOL,RECE_AMT,REAL_AMT,DISC_AMT,PROD_ID FROM rpt_shift_prod_noz_order " \
-              "WHERE STATION_ID='%s' and SHIFT_NO='%s' ORDER BY PROD_ID,NOZ_NO" % (ctx[1], shift_no)
+    rpt_sql = "SELECT PROD_NAME,NOZ_NO,CNT,VOL,RECE_AMT,REAL_AMT,DISC_AMT,PROD_ID FROM %s.rpt_shift_prod_noz_order " \
+              "WHERE STATION_ID='%s' and SHIFT_NO='%s' ORDER BY PROD_ID,NOZ_NO" % (rpt_db_name, ctx[1], shift_no)
     print(rpt_sql)
     cur.execute(rpt_sql)
     rows = cur.fetchall()
@@ -238,8 +237,8 @@ def _create_excel(cur, ctx, shift_no):
     total = Total()  # 总计
     prod_total = Total()  # 行汇总
     rpt_sql = "SELECT EMP_NAME,PAY_TYPE_NAME,SUM(CNT) AS CNT,SUM(VOL)AS VOL,SUM(RECE_AMT)AS RECE_AMT,SUM(REAL_AMT)AS REAL_AMT," \
-              "SUM(DISC_AMT)AS DISC_AMT FROM rpt_shift_emp_prod_pay WHERE STATION_ID='%s' and SHIFT_NO='%s'" \
-              "GROUP BY EMP_NAME,PAY_TYPE_NAME" % (ctx[1], shift_no)
+              "SUM(DISC_AMT)AS DISC_AMT FROM %s.rpt_shift_emp_prod_pay WHERE STATION_ID='%s' and SHIFT_NO='%s'" \
+              "GROUP BY EMP_NAME,PAY_TYPE_NAME" % (rpt_db_name, ctx[1], shift_no)
     print(rpt_sql)
     cur.execute(rpt_sql)
     rows = cur.fetchall()
@@ -335,7 +334,7 @@ def _create_excel(cur, ctx, shift_no):
     return wb
 
 
-def build_shift_report(conn, argv):
+def build_shift_report(conn, argv, report_db_name):
     print(argv)
     station_id = argv[1]
     shift_no = argv[2]
@@ -347,7 +346,7 @@ def build_shift_report(conn, argv):
     ctx = cur.fetchone()
     print(ctx)
     if ctx:
-        _shift_emp_prod_pay(cur, ctx, shift_no, shift_date)
-        _shift_prod_noz_order(cur, ctx, shift_no, shift_date)
+        _shift_emp_prod_pay(cur, ctx, shift_no, shift_date, report_db_name)
+        _shift_prod_noz_order(cur, ctx, shift_no, shift_date, report_db_name)
         conn.commit()
-        return _create_excel(cur, ctx, shift_no)
+        return _create_excel(cur, ctx, shift_no, report_db_name)

@@ -1,17 +1,18 @@
-from db_config_server import conn
+from config.config_db_server import conn
 from shift_report_comm import *
+from _util import prepare_path
 import sys
 
 '''
 服务端班次报表
-站点号 班次号 班次日期
+站点号 班次号 班次日期 报表路径
 '''
 
 
 # python shift_report_server.py 100031001 201911212217 2019-11-21 /opt/report/....
 
 # 充值汇总
-def _shift_charge_order(argv, wb):
+def _shift_charge_order(argv, rpt_db_name, wb):
     station_id = argv[1]
     shift_no = argv[2]
     cur = conn.cursor()
@@ -26,14 +27,14 @@ def _shift_charge_order(argv, wb):
     shift_row = cur.fetchone()
     print(shift_row)
     if shift_row:
-        print('_shift_charge_order:', cur.execute(
-            "DELETE FROM `eng_order`.`rpt_shift_emp_charge` WHERE STATION_ID='%s' AND SHIFT_NO='%s'" % (
-                ctx[1], shift_no)))
-        sql = "INSERT INTO `eng_order`.`rpt_shift_emp_charge`(`GROUP_ID`,`STATION_ID`,`SHIFT_NO`,`SHIFT_DATE`,`EMP_ID`,`EMP_NAME`,`PAY_TYPE_ID`,`PAY_TYPE_NAME`,`CNT`,`AMT`,`GIFT_AMT`,`TOTAL_AMT`)" \
+        print('_shift_charge_order:',
+              cur.execute("DELETE FROM %s.`rpt_shift_emp_charge` WHERE STATION_ID='%s' AND SHIFT_NO='%s'" % (
+                  rpt_db_name, ctx[1], shift_no)))
+        sql = "INSERT INTO %s.`rpt_shift_emp_charge`(`GROUP_ID`,`STATION_ID`,`SHIFT_NO`,`SHIFT_DATE`,`EMP_ID`,`EMP_NAME`,`PAY_TYPE_ID`,`PAY_TYPE_NAME`,`CNT`,`AMT`,`GIFT_AMT`,`TOTAL_AMT`)" \
               "SELECT GROUP_ID,OPT_STATION_ID as STATION_ID,'%s' as SHIFT_NO,'%s' as SHIFT_DATE, OPT_EMP_ID as EMP_ID,OPT_EMP_NAME as EMP_NAME,PAY_TYPE_ID,PAY_TYPE_NAME,COUNT(1)AS CNT,SUM(AMT)AS AMT,SUM(GIFT_AMT)AS GIFT_AMT,SUM(AMT+GIFT_AMT)as TOTAL_AMT " \
               "from eng_crm.history_charge WHERE GROUP_ID='%s' AND OPT_STATION_ID='%s' AND CREATED_TIME>='%s' AND CREATED_TIME<'%s' " \
               "GROUP BY GROUP_ID,OPT_STATION_ID,OPT_EMP_ID,OPT_EMP_NAME,PAY_TYPE_ID,PAY_TYPE_NAME ORDER BY PAY_TYPE_ID" % (
-                  shift_row[0], shift_row[1], ctx[0], ctx[1], shift_row[2], shift_row[3])
+                  rpt_db_name, shift_row[0], shift_row[1], ctx[0], ctx[1], shift_row[2], shift_row[3])
         # print(sql)
         cur.execute(sql)
         conn.commit()
@@ -84,8 +85,9 @@ def _shift_charge_order(argv, wb):
 
         total = Total()  # 总计
         emp_total = Total()  # 行汇总
-        rpt_sql = "SELECT EMP_NAME,PAY_TYPE_NAME,SUM(CNT),SUM(AMT),SUM(GIFT_AMT),SUM(TOTAL_AMT) FROM `eng_order`.`rpt_shift_emp_charge` " \
-                  "where station_id='%s' and shift_no='%s' GROUP BY EMP_NAME,PAY_TYPE_NAME" % (station_id, shift_no)
+        rpt_sql = "SELECT EMP_NAME,PAY_TYPE_NAME,SUM(CNT),SUM(AMT),SUM(GIFT_AMT),SUM(TOTAL_AMT) FROM %s.`rpt_shift_emp_charge` " \
+                  "where station_id='%s' and shift_no='%s' GROUP BY EMP_NAME,PAY_TYPE_NAME" % (
+                      rpt_db_name, station_id, shift_no)
         print(rpt_sql)
         cur.execute(rpt_sql)
         rows = cur.fetchall()
@@ -175,6 +177,8 @@ def _shift_charge_order(argv, wb):
         return wb
 
 
+report_db_name = 'eng_report'
+
 if __name__ == '__main__':
     if len(sys.argv) < 5:
         print('param error', sys.argv)
@@ -182,8 +186,8 @@ if __name__ == '__main__':
         try:
             file_name = sys.argv[4]
             prepare_path(file_name)
-            wb = build_shift_report(conn, sys.argv)
-            _shift_charge_order(sys.argv, wb)
+            wb = build_shift_report(conn, sys.argv, report_db_name)
+            _shift_charge_order(sys.argv, report_db_name, wb)
             # wb.save("D:\\shift_report_%s.xlsx" % (shift_no))
             wb.save(file_name)
         except Exception as e:

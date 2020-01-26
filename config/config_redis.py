@@ -1,6 +1,6 @@
 import redis
 
-_pool = redis.ConnectionPool(host='47.112.101.21', port=6379, password='', db=1)
+_pool = redis.ConnectionPool(host='47.112.101.21', port=6379, password='eng@redis', db=1)
 rd = redis.Redis(connection_pool=_pool)
 # redisCur.connection_pool.disconnect()
 

@@ -1,6 +1,6 @@
 import sys
 import datetime
-from db_config_server import conn
+from config.config_db_server import conn
 
 cur = conn.cursor()
 

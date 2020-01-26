@@ -1,4 +1,4 @@
-from db_config_server import conn
+from config.config_db_server import conn
 
 '''
 服务端检查活动状态 修改已经过期的活动状态

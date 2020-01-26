@@ -1,6 +1,12 @@
 import pymysql as mdb
 
-_db = {'host': '127.0.0.1', "port": 3306, "user": 'root', "password": 'eng888@local', "database": "eng_client"}
+# _db = {'host': '127.0.0.1', "port": 3306, "user": 'root', "password": 'eng888@local', "database": "eng_client", "charset": "utf8"}
+_db = {'host': '47.112.101.21',
+       "port": 3306,
+       "user": 'root',
+       "password": 'sblv',
+       "database": "eng_client",
+       "charset": "utf8"}
 
 conn = mdb.connect(
     host=_db.get('host'),
@@ -15,5 +21,7 @@ if __name__ == '__main__':
     db_cur.execute("select * from emp_info")
     results = db_cur.fetchall()
     if results:
-        print(results)
+        for item in results:
+            print(item)
+    db_cur.close()
     conn.close()
