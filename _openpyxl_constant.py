@@ -29,6 +29,14 @@ sheet['B2']='列宽被设置为 50'
 sheet.column_dimensions['B'].width=50
 '''
 
+
+def set_cell(sheet, row_index, cell_index, value, font_style, alignment_style, border_style):
+    sheet.cell(row_index, cell_index).font = font_style
+    sheet.cell(row_index, cell_index).alignment = alignment_style
+    sheet.cell(row_index, cell_index).border = border_style
+    sheet.cell(row_index, cell_index, value)
+
+
 if __name__ == '__main__':
     print(column_letter)
     pass

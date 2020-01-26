@@ -15,3 +15,7 @@ def get_now_full():
 def get_now_year_month():
     return datetime.datetime.now().strftime("%Y-%m")
 
+
+MEMBER_STATUS_DICT = {1: '正常', -1: '注销', 0: '冻结', -2: '冻结'}
+
+MEMBER_TYPE_DICT = {1: '散户', 2: '总账户', 3: '子账户'}

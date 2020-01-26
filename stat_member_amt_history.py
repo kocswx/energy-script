@@ -11,9 +11,6 @@ cell_name = ['会员ID', '会员姓名', '账户类型', '状态', '所属企业
 
 cur = conn.cursor()
 
-MEMBER_STATUS_DICT = {1: '正常', -1: '注销', 0: '冻结', -2: '冻结'}
-MEMBER_TYPE_DICT = {1: '散户', 2: '总账户', 3: '子账户'}
-
 
 class AmountType:
     start_amount = 0
@@ -23,10 +20,6 @@ class AmountType:
     trans_out_amount = 0
     trans_in_amount = 0
     end_amount = 0
-
-
-# URL_PATH="http://testdownload.365yzg.com/"
-URL_PATH = "http://oss.youzhanguanjia.com/download/report//"
 
 
 def _get_member_count(group_id, station_id, end_time):
@@ -59,22 +52,19 @@ def _write_excel(group_id, begin_time, end_time, station_id, emp_name, save_path
     row_index = 1
 
     sheet.merge_cells("A1:%s1" % column_letter[len(cell_name) - 1])
-    _set_cell(sheet, row_index, 1, sheet.title, font_rpt_title, align_center, border)
+    set_cell(sheet, row_index, 1, sheet.title, font_rpt_title, align_center, border)
     row_index += 1
 
-    _set_cell(sheet, row_index, 1, ('统计时间：%s 到 %s' % (begin_time, end_time)), font_rpt_normal, align_left, border)
+    set_cell(sheet, row_index, 1, ('统计时间：%s 到 %s' % (begin_time, end_time)), font_rpt_normal, align_left, border)
     sheet.merge_cells(start_row=row_index, start_column=1, end_row=row_index, end_column=5)
-    _set_cell(sheet, row_index, 6, ('提交员工：%s' % emp_name), font_rpt_normal, align_center, border)
+    set_cell(sheet, row_index, 6, ('提交员工：%s' % emp_name), font_rpt_normal, align_center, border)
     sheet.merge_cells(start_row=row_index, start_column=6, end_row=row_index, end_column=10)
-    _set_cell(sheet, row_index, 11, ('生成时间：%s' % get_now_full()), font_rpt_normal, align_right, border)
+    set_cell(sheet, row_index, 11, ('生成时间：%s' % get_now_full()), font_rpt_normal, align_right, border)
     sheet.merge_cells(start_row=row_index, start_column=11, end_row=row_index, end_column=15)
 
     row_index += 1
     for i in range(len(cell_name)):
-        sheet.cell(row_index, i + 1).font = font_rpt_cell_header
-        sheet.cell(row_index, i + 1).alignment = align_center
-        sheet.cell(row_index, i + 1).border = border
-        sheet.cell(row_index, i + 1, cell_name[i])
+        set_cell(sheet, row_index, i + 1, cell_name[i], font_rpt_cell_header, align_center, border)
         sheet.column_dimensions[column_letter[i]].width = 12
     row_index += 1
 
@@ -83,37 +73,30 @@ def _write_excel(group_id, begin_time, end_time, station_id, emp_name, save_path
     member_list = _get_member_record(group_id, end_time, 0, member_count, station_id)
     # print(member_list)
 
-    for m in member_list:
-        member_id = m[0]
+    for item in member_list:
+        member_id = item[0]
         print(member_id)
-        balance_amt = m[8]
+        balance_amt = item[8]
         amount_type = _get_member_all_type_amount(member_id, balance_amt, begin_time, end_time)
         # print(amount_type.__dict__)
-        _set_cell(sheet, row_index, 1, member_id, font_rpt_normal, align_center, border)
-        _set_cell(sheet, row_index, 2, m[1], font_rpt_normal, align_center, border)
-        _set_cell(sheet, row_index, 3, MEMBER_TYPE_DICT[m[2]], font_rpt_normal, align_center, border)
-        _set_cell(sheet, row_index, 4, MEMBER_STATUS_DICT[m[3]], font_rpt_normal, align_center, border)
-        _set_cell(sheet, row_index, 5, m[4], font_rpt_normal, align_center, border)
-        _set_cell(sheet, row_index, 6, m[5], font_rpt_normal, align_center, border)
-        _set_cell(sheet, row_index, 7, amount_type.start_amount, font_rpt_normal, align_center, border)  # 开始余额
-        _set_cell(sheet, row_index, 8, amount_type.charge_amount, font_rpt_normal, align_center, border)  # 充值金额
-        _set_cell(sheet, row_index, 9, amount_type.consume_amount, font_rpt_normal, align_center, border)  # 消费金额
-        _set_cell(sheet, row_index, 10, amount_type.refund_amount, font_rpt_normal, align_center, border)  # 退款金额
-        _set_cell(sheet, row_index, 11, amount_type.trans_out_amount, font_rpt_normal, align_center, border)  # 转出金额
-        _set_cell(sheet, row_index, 12, amount_type.trans_in_amount, font_rpt_normal, align_center, border)  # 转入金额
-        _set_cell(sheet, row_index, 13, amount_type.end_amount, font_rpt_normal, align_center, border)
-        _set_cell(sheet, row_index, 14, m[6], font_rpt_normal, align_center, border)
-        _set_cell(sheet, row_index, 15, m[7], font_rpt_normal, align_center, border)
+        set_cell(sheet, row_index, 1, member_id, font_rpt_normal, align_center, border)
+        set_cell(sheet, row_index, 2, item[1], font_rpt_normal, align_center, border)
+        set_cell(sheet, row_index, 3, MEMBER_TYPE_DICT[item[2]], font_rpt_normal, align_center, border)
+        set_cell(sheet, row_index, 4, MEMBER_STATUS_DICT[item[3]], font_rpt_normal, align_center, border)
+        set_cell(sheet, row_index, 5, item[4], font_rpt_normal, align_center, border)
+        set_cell(sheet, row_index, 6, item[5], font_rpt_normal, align_center, border)
+        set_cell(sheet, row_index, 7, amount_type.start_amount, font_rpt_normal, align_center, border)  # 开始余额
+        set_cell(sheet, row_index, 8, amount_type.charge_amount, font_rpt_normal, align_center, border)  # 充值金额
+        set_cell(sheet, row_index, 9, amount_type.consume_amount, font_rpt_normal, align_center, border)  # 消费金额
+        set_cell(sheet, row_index, 10, amount_type.refund_amount, font_rpt_normal, align_center, border)  # 退款金额
+        set_cell(sheet, row_index, 11, amount_type.trans_out_amount, font_rpt_normal, align_center, border)  # 转出金额
+        set_cell(sheet, row_index, 12, amount_type.trans_in_amount, font_rpt_normal, align_center, border)  # 转入金额
+        set_cell(sheet, row_index, 13, amount_type.end_amount, font_rpt_normal, align_center, border)
+        set_cell(sheet, row_index, 14, item[6], font_rpt_normal, align_center, border)
+        set_cell(sheet, row_index, 15, item[7], font_rpt_normal, align_center, border)
         row_index += 1
 
     wb.save(save_path)
-
-
-def _set_cell(sheet, row_index, cell_index, value, font_style, alignment_style, border_style):
-    sheet.cell(row_index, cell_index).font = font_style
-    sheet.cell(row_index, cell_index).alignment = alignment_style
-    sheet.cell(row_index, cell_index).border = border_style
-    sheet.cell(row_index, cell_index, value)
 
 
 def _get_member_all_type_amount(member_id, balance_amt, begin_time, end_time):
