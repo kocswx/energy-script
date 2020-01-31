@@ -18,10 +18,6 @@ conn = mdb.connect(
 
 if __name__ == '__main__':
     db_cur = conn.cursor()
-    db_cur.execute("select * from emp_info")
-    results = db_cur.fetchall()
-    if results:
-        for item in results:
-            print(item)
+    print("数据库连接正常")
     db_cur.close()
     conn.close()

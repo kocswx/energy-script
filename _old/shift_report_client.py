@@ -1,5 +1,5 @@
 from config.config_db_client import conn
-from shift_report_comm import *
+from _old.shift_report_comm import *
 from _util import prepare_path
 import sys
 
@@ -22,5 +22,5 @@ if __name__ == '__main__':
             # wb.save("D:\\shift_report_%s.xlsx" % (shift_no))
             wb.save(file_name)
         except Exception as e:
-            print(f"Unexpected error: {e}")
+            print("Unexpected error: {e}")
     conn.close()

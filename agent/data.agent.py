@@ -1,9 +1,10 @@
 # -*- coding: UTF-8 -*-
+# coding=utf-8
 import pypyodbc
-import requests
 import json
 import time
 import os
+import urllib.request
 
 '''
 Python使用ODBC连接SqlServer，版本对应的DRIVER名称如下：
@@ -43,10 +44,11 @@ import_api = 'http://{ip}:8858/ImportService/SaveOrder'
 
 def query_save():
     try:
+        sql = 'select top 10 [orderid],[fpno],[prname],[price],[vol],[amt],[tvol],[tamt],[fueltime] FROM [_ExtPayOrder]' \
+              ' where [status]=0 order by orderid asc'
+        print(sql)
         conn = pypyodbc.connect(conn_str)
         cur = conn.cursor()
-        sql = 'select top 1 [orderid],[fpno],[prname],[price],[vol],[amt],[tvol],[tamt],[fueltime] FROM [_ExtPayOrder]' \
-              ' where [status]=0 order by orderid asc'
         cur.execute(sql)
         rows = cur.fetchall()
         if rows:
@@ -62,15 +64,17 @@ def query_save():
                 data = json.dumps(data)
                 print('..............................................')
                 print("--->", data)
-                rsp = requests.post(url=import_api, data=data, headers={'Content-Type': 'application/json'})
-                print("<---", rsp.status_code, rsp.text)
-                if rsp.status_code == 200:
-                    result = json.loads(rsp.text)
-                    if result['IsSaved']:
-                        new_order_id = result['SavedOrderId']
-                        cur.execute("update _ExtPayOrder set [status]=1,neworderid=%s where orderid='%s'" % (
-                            new_order_id, orderId))
-                        conn.commit()
+                params = bytes(data, 'utf8')
+                headers = {'Accept-Charset': 'utf-8', 'Content-Type': 'application/json'}
+                req = urllib.request.Request(url=import_api, data=params, headers=headers, method='POST')
+                response = urllib.request.urlopen(req).read().decode('utf-8')
+                print(response)
+                result = json.loads(response)
+                if result['IsSaved']:
+                    new_order_id = result['SavedOrderId']
+                    cur.execute("update _ExtPayOrder set [status]=1,neworderid=%s where orderid='%s'" % (
+                        new_order_id, orderId))
+                    conn.commit()
                 time.sleep(0.2)
         cur.close()
         conn.close()
