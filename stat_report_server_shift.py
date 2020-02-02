@@ -15,7 +15,7 @@ if __name__ == '__main__':
     argv = sys.argv
     try:
         param = StatParam()
-        param.init(argv, conn, db.DB_ERP, db.DB_ORDER)
+        param.init(argv)
 
         save_path = param.file_name
         print("save_path: ", save_path)

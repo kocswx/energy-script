@@ -27,9 +27,11 @@ def _get_station_name(cur, db, station_id):
 def _get_report_desc(param, cur, db):
     param_string = ""
     if param.station_id:
-        cur.execute("select STATION_NAME from %s.station_info where STATION_ID='%s'" % (db.DB_ERP, param.station_id))
+        sql = "select STATION_NAME from %s.station_info where STATION_ID='%s'" % (db.DB_ERP, param.station_id)
+        # print(sql)
+        cur.execute(sql)
         param.station_name = cur.fetchone()[0]
-        # param_string = "站点：%s  " % param.station_name
+        print("站点：%s  " % param.station_name)
     if param.begin_date:
         param_string = param_string + "开始：%s  " % param.begin_date
     if param.end_date:
@@ -37,6 +39,7 @@ def _get_report_desc(param, cur, db):
     if param.shift_no:
         cur.execute("select SHIFT_DATE,START_TIME,END_TIME,EMP_NAME from %s.shift_record "
                     "where STATION_ID='%s' AND SHIFT_NO='%s'" % (db.DB_ORDER, param.station_id, param.shift_no))
+        print()
         shift = cur.fetchone()
         param.shift_date = shift[0]
         param.shift_start_time = shift[1]
@@ -56,7 +59,6 @@ def prod_noz_order_xls(wb, cur, db, param_xml):
     sheet.title = '油品-油枪销售汇总'
     cell_name = ['站点名称', '油品名称', '枪号', '笔数', '销售升数', '销售金额', '实收金额', '优惠金额']
     row_index = 1
-
     sheet.merge_cells("A1:%s1" % column_letter[len(cell_name) - 1])
     set_cell(sheet, row_index, 1, sheet.title, font_rpt_title, align_center, border)
     row_index += 1
@@ -64,6 +66,7 @@ def prod_noz_order_xls(wb, cur, db, param_xml):
     set_cell(sheet, row_index, 1, ('打印时间：%s' % get_now_full()), font_rpt_normal, align_right, border)
     sheet.merge_cells(start_row=row_index, start_column=1, end_row=row_index, end_column=len(cell_name))
     row_index += 1
+    print('2222222222222222222222222222222')
 
     set_cell(sheet, row_index, 1, _get_report_desc(param, cur, db), font_rpt_normal, align_left, border)
     sheet.merge_cells(start_row=row_index, start_column=1, end_row=row_index, end_column=len(cell_name))
@@ -73,6 +76,8 @@ def prod_noz_order_xls(wb, cur, db, param_xml):
         set_cell(sheet, row_index, i + 1, cell_name[i], font_rpt_cell_header, align_center, border)
         sheet.column_dimensions[column_letter[i]].width = 12
     row_index += 1
+
+    print('333333333333333333333333333333')
 
     total = Total()  # 总计
 

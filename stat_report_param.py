@@ -33,6 +33,14 @@ class StatParam:
         self.end_date = param[4]
         self.shift_no = param[5]
         self.file_name = param[6]
+        if self.station_id == 'NULL':
+            self.station_id = None
+        if self.begin_date == 'NULL':
+            self.begin_date = None
+        if self.end_date == 'NULL':
+            self.end_date = None
+        if self.shift_no == 'NULL':
+            self.shift_no = None
 
     def copy(self):
         result = StatParam()
