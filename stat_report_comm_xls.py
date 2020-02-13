@@ -66,7 +66,6 @@ def prod_noz_order_xls(wb, cur, db, param_xml):
     set_cell(sheet, row_index, 1, ('打印时间：%s' % get_now_full()), font_rpt_normal, align_right, border)
     sheet.merge_cells(start_row=row_index, start_column=1, end_row=row_index, end_column=len(cell_name))
     row_index += 1
-    print('2222222222222222222222222222222')
 
     set_cell(sheet, row_index, 1, _get_report_desc(param, cur, db), font_rpt_normal, align_left, border)
     sheet.merge_cells(start_row=row_index, start_column=1, end_row=row_index, end_column=len(cell_name))
@@ -76,8 +75,6 @@ def prod_noz_order_xls(wb, cur, db, param_xml):
         set_cell(sheet, row_index, i + 1, cell_name[i], font_rpt_cell_header, align_center, border)
         sheet.column_dimensions[column_letter[i]].width = 12
     row_index += 1
-
-    print('333333333333333333333333333333')
 
     total = Total()  # 总计
 
