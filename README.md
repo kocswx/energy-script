@@ -1,12 +1,12 @@
 # energy-script
 
 python3 -m pip install --upgrade pip
-pip3 install pyinstaller==3.2.1
-pip3 install openpyxl
-pip3 install pypyodbc
-pip3 install pymysql
-pip3 install requests
-pip3 install redis
+pip install pyinstaller==3.2.1
+pip install openpyxl
+pip install pymysql
+pip install pypyodbc
+pip install redis
+
 
 data.agent.py               华气厚普数据采集
 shift_report_server.py      服务端生成班次报表
