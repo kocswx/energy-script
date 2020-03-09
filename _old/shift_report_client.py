@@ -9,7 +9,7 @@ import sys
 '''
 # python shift_report_client.py 100031001 201911212217 2019-11-21 D:\\rpt.xlsx
 
-report_db_name = conn.db
+report_db_name = conn.database
 
 if __name__ == '__main__':
     if len(sys.argv) < 5:

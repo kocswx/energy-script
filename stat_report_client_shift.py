@@ -1,5 +1,5 @@
 # coding:utf-8
-from config.config_db_server import *
+from config.config_db_client import *
 from stat_report_param import *
 from stat_report_comm_data import *
 from stat_report_comm_xls import *

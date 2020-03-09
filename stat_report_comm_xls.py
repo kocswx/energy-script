@@ -116,8 +116,8 @@ def _prod_noz_order_xls_station(sheet, row_index, cur, db, param, total_station)
     set_cell(sheet, row_index, 1, station_name, font_rpt_normal, align_center, border)
 
     rpt_sql = "SELECT PROD_NAME,NOZ_NO,SUM(CNT),SUM(VOL),SUM(RECE_AMT),SUM(REAL_AMT),SUM(DISC_AMT),STATION_ID,PROD_ID " \
-              "FROM eng_report.rpt_shift_prod_noz_order " \
-              "WHERE GROUP_ID=%s AND STATION_ID='%s' " % (param.group_id, param.station_id)
+              "FROM %s.rpt_shift_prod_noz_order " \
+              "WHERE GROUP_ID=%s AND STATION_ID='%s' " % (db.DB_REPORT, param.group_id, param.station_id)
     if param.shift_no:
         rpt_sql += (" AND SHIFT_NO='%s'" % param.shift_no)
     else:
